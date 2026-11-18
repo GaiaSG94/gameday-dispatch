@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Dispatch · V1 · 01 Control Room</title>
+<style>
+:root{--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+--mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--board-bg);color:var(--board-ink)}
+body{width:1440px;margin:0 auto;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.sheet{height:900px;padding:26px 48px 22px;display:flex;flex-direction:column;gap:18px}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;border-bottom:1px solid var(--board-line);padding-bottom:16px}
+.sh-k{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--board-mute)}
+.sh-t{font:600 26px/1.1 var(--sans);letter-spacing:-.015em;margin-top:9px}
+.sh-d{font-size:13px;line-height:1.45;color:var(--board-mute);margin-top:6px;max-width:640px}
+.spec{display:flex;gap:28px;align-items:flex-end}
+.sw{display:flex;gap:8px}
+.sw div{display:flex;flex-direction:column;gap:5px;font:500 9px/1 var(--mono);color:var(--board-mute);letter-spacing:.04em}
+.sw i{width:40px;height:30px;border:1px solid var(--board-line);display:block}
+.ty{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--board-mute)}
+.ty b{font:var(--ty-a);color:var(--board-ink)} .ty code{font:500 15px/1 var(--mono);color:var(--board-ink)}
+.frames{display:flex;gap:40px;justify-content:center;align-items:flex-start}
+.cap{font:500 10px/1 var(--mono);color:var(--board-mute);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between}
+.scaled{position:relative;overflow:hidden;outline:1px solid var(--board-line)}
+.scaled>.inner{position:absolute;top:0;left:0;transform-origin:0 0}
+.notes{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;border-top:1px solid var(--board-line);padding-top:14px;margin-top:auto}
+.note{font-size:12px;line-height:1.45;color:var(--board-mute)}
+.note b{display:block;color:var(--board-ink);font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.note b span{color:var(--accent)}
+
+/* ---------- Reddit-like frame, deliberately neutral (no brand) ---------- */
+.dsk{width:1440px;height:900px;position:relative;background:var(--feed-bg);font-family:system-ui,sans-serif;overflow:hidden}
+.topbar{height:56px;border-bottom:1px solid var(--feed-line);display:flex;align-items:center;padding:0 20px;gap:14px}
+.topbar .lg{width:32px;height:32px;border-radius:50%;background:var(--feed-mute)}
+.topbar .lgt{width:72px;height:12px;border-radius:6px;background:var(--feed-mute)}
+.topbar .se{width:560px;height:38px;border-radius:19px;background:var(--feed-card);margin-left:330px}
+.topbar .av{width:32px;height:32px;border-radius:50%;background:var(--feed-card);margin-left:auto}
+.rail{position:absolute;left:0;top:56px;width:272px;bottom:0;border-right:1px solid var(--feed-line);padding:24px}
+.rail i{display:block;height:10px;border-radius:5px;background:var(--feed-card);margin:0 0 22px;width:68%}
+.rail i:nth-child(3n){width:48%} .rail i:nth-child(4n){width:80%}
+.col{position:absolute;left:400px;top:80px;width:740px}
+.pc{border-bottom:1px solid var(--feed-line);padding:18px 0 22px}
+.pc i{display:block;height:10px;border-radius:5px;background:var(--feed-card);width:30%;margin-bottom:14px}
+.pc i+i{height:16px;width:70%}
+.pc em{display:block;height:300px;border-radius:14px;background:var(--feed-card)}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.modal{position:absolute;left:240px;top:40px;width:960px;height:820px;border-radius:14px;overflow:hidden;background:var(--g-bg);box-shadow:0 24px 80px rgba(0,0,0,.45)}
+.bar{height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--feed-bg);border-bottom:1px solid var(--feed-line);color:var(--feed-ink);font-size:13px}
+.bar .ic{width:22px;height:22px;border-radius:50%;background:var(--feed-mute)}
+.bar small{color:var(--feed-mute2);font-size:12px}
+.bar .x{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--feed-card);position:relative}
+.bar .x:before,.bar .x:after{content:"";position:absolute;left:8px;top:13px;width:12px;height:1.5px;background:var(--feed-ink);transform:rotate(45deg)}
+.bar .x:after{transform:rotate(-45deg)}
+.dsk .wv{height:774px}
+.mob{width:390px;height:844px;background:var(--feed-bg);display:flex;flex-direction:column;overflow:hidden;font-family:system-ui,sans-serif}
+.sbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font:600 15px/1 system-ui,sans-serif;color:var(--feed-ink)}
+.sbar span+span{width:64px;height:11px;border-radius:3px;background:var(--feed-mute)}
+.mob .bar{border-top:0}
+.mob .bar .x{margin-left:0}
+.mob .wv{flex:1}
+.wv{container-type:inline-size;position:relative;overflow:hidden}
+.game{height:100%}
+
+
+:root{--board-bg:#0a101c;--board-ink:#e6edf7;--board-mute:#7f8ca3;--board-line:#1e2a40;--accent:#34d399;--ty-a:600 22px/1 var(--sans);
+--feed-bg:#0e1113;--feed-card:#1d2226;--feed-line:#24292d;--feed-mute:#3a4146;--feed-mute2:#7d878d;--feed-ink:#d7dadc;--scrim:rgba(0,0,0,.6);
+--g-bg:#0e1626;--panel:#132036;--rail:#3b4a63;--line:#1f2c44;--ink:#e6edf7;--mute:#8593ab;--sig:#34d399;--warn:#f5b942}
+.game{background:var(--g-bg);color:var(--ink);display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;font-family:var(--sans)}
+.g-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:10px}
+.brand{font:650 19px/1 var(--sans);letter-spacing:-.01em}
+.brand small{display:block;font:500 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:6px}
+.meta{display:flex;gap:16px}
+.m{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.m i{font:500 8.5px/1 var(--mono);font-style:normal;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.m b{font:600 15px/1 var(--mono);letter-spacing:.02em}
+.m-s b{color:var(--sig)}
+.rule{font-size:13px;line-height:1.35;color:var(--mute)}
+.body{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.side{display:flex;flex-direction:column;gap:12px}
+.yard{border:1px solid var(--line);background:
+ linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 20px,
+ linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/20px 100%,var(--g-bg);
+ background-blend-mode:normal;position:relative}
+.yard:after{content:"";position:absolute;inset:0;background:rgba(14,22,38,.72);pointer-events:none}
+.yard svg{display:block;width:100%;height:auto;position:relative;z-index:1}
+h3{font:500 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;display:flex;justify-content:space-between}
+h3 span{color:var(--ink)}
+.chips{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line)}
+.chip{display:flex;flex-direction:column;gap:3px;align-items:flex-start;padding:8px 7px;text-align:left;border-right:1px solid var(--line);position:relative}
+.chip:last-child{border-right:0}
+.c-code{font:650 13px/1 var(--mono);letter-spacing:.04em}
+.c-name{font-size:10px;color:var(--mute);text-transform:capitalize}
+.c-pl{font:500 8px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.chip.is-placed .c-code,.chip.is-placed .c-name{opacity:.4}
+.chip.is-placed .c-pl{color:var(--sig)}
+.chip.is-active{background:rgba(52,211,153,.08);box-shadow:inset 0 0 0 1px var(--sig)}
+.chip.is-active .c-code,.chip.is-active .c-pl{color:var(--sig)}
+.orders ol{list-style:none;border-top:1px solid var(--line)}
+.orders li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.35}
+.o-n{font:500 10px/1.6 var(--mono);color:var(--mute)}
+.cta{margin-top:auto;height:46px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;border:1px solid var(--rail);color:var(--mute);font:600 13px/1 var(--sans);letter-spacing:.02em;position:relative;overflow:hidden;cursor:not-allowed}
+.cta:before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(var(--p)*100%);background:rgba(52,211,153,.10);border-right:1px solid rgba(52,211,153,.5)}
+.cta span{position:relative}
+.cta-n{font:600 13px/1 var(--mono);color:var(--ink)}
+/* svg */
+.t-rail{stroke:var(--rail);stroke-width:2;fill:none}
+.t-lit{stroke:var(--sig);stroke-width:2;fill:none}
+.t-route{stroke:var(--warn);stroke-width:2;fill:none;stroke-dasharray:5 4;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-18}}
+.pl{font:500 9px var(--mono);fill:var(--mute);letter-spacing:.08em}
+.car{fill:#1a2a46;stroke:#4a5d7d;stroke-width:1}
+.car-t{font:650 10px var(--mono);fill:var(--ink);letter-spacing:.05em}
+.car-n{font:400 9px var(--sans);fill:var(--mute)}
+.slot{fill:none;stroke:var(--rail);stroke-width:1;stroke-dasharray:3 3}
+.slot-t{font:500 8.5px var(--mono);fill:var(--mute);letter-spacing:.14em}
+.slot.hov{stroke:var(--warn)} .slot-t.hov{fill:var(--warn)}
+.sig-on{fill:var(--sig)} .sig-off{fill:var(--rail)} .sig-wait{fill:var(--warn)}
+.halo{fill:none;stroke:var(--sig);stroke-width:1;opacity:.6;animation:halo 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes halo{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(1.25,1.6)}}
+.act{fill:var(--g-bg);stroke:var(--sig);stroke-width:1.5}
+.act-t{font:650 10px var(--mono);fill:var(--sig);letter-spacing:.05em}
+.lead-t{font:500 7.5px var(--mono);fill:var(--mute);letter-spacing:.14em}
+@container (min-width:600px){
+ .game{padding:26px 32px 28px;gap:18px}
+ .brand{font-size:26px} .m b{font-size:24px} .meta{gap:28px} .m i{font-size:9.5px}
+ .rule{font-size:14px}
+ .body{display:grid;grid-template-columns:1.5fr 1fr;gap:24px}
+ .side{gap:22px}
+ .chips{grid-template-columns:1fr}
+ .chip{flex-direction:row;align-items:center;gap:10px;border-right:0;border-bottom:1px solid var(--line);padding:9px 12px}
+ .chip:last-child{border-bottom:0}
+ .c-code{width:38px} .c-name{font-size:12px;flex:1} .c-pl{margin:0}
+ .orders li{font-size:13.5px;padding:9px 0}
+ .yard{display:flex;align-items:center}
+ .cta{height:54px;font-size:15px}
+}
+
+</style></head>
+<body>
+<div class="sheet">
+  <div class="sheet-head">
+    <div>
+      <div class="sh-k">Dispatch · Planche V1 · 01 / 03 · Page principale « Jeu » · 2026-11-18</div>
+      <div class="sh-t">01 — Control Room</div>
+      <div class="sh-d">La direction de départ, tenue serrée. Nuit bleue, un seul vert signal, le schéma de voies en héros : l'entrée à gauche, cinq aiguillages qui s'allument quand un quai est occupé. Filets 1 px et étiquettes mono (Baseten), la donnée au centre (Cron).</div>
+    </div>
+    <div class="spec">
+      <div class="sw"><div><i style="background:#0e1626"></i>Nuit<br>#0e1626</div><div><i style="background:#132036"></i>Panneau<br>#132036</div><div><i style="background:#3b4a63"></i>Rail<br>#3b4a63</div><div><i style="background:#34d399"></i>Signal<br>#34d399</div><div><i style="background:#f5b942"></i>Attente<br>#f5b942</div></div>
+      <div class="ty"><b>Dispatch</b><code>01:42 · P3</code><span>Sans pour les titres · mono pour quais, horaires, codes</span></div>
+    </div>
+  </div>
+  <div class="frames">
+    <div><div class="cap"><span>Desktop · 1440 × 900 · vue étendue</span><span>× 0.62</span></div>
+      <div class="scaled" style="width:893px;height:558px"><div class="inner" id="dsk" style="transform:scale(.62)"></div></div></div>
+    <div><div class="cap"><span>Mobile · 390 × 844</span><span>× 0.661</span></div>
+      <div class="scaled" style="width:258px;height:558px"><div class="inner" id="mob" style="transform:scale(.6611)"></div></div></div>
+  </div>
+  <div class="notes"><div class="note"><b><span>01</span> · Sélection</b>Le train choisi (FRT) attend sur la voie d'entrée, contour vert pulsé. Les trains placés passent en grisé avec leur quai.</div><div class="note"><b><span>02</span> · Survol du quai 2</b>L'itinéraire se dessine en pointillé ambre depuis l'entrée : on voit où le train va avant de toucher.</div><div class="note"><b><span>03</span> · Quai occupé</b>L'aiguillage et le feu restent allumés en vert. C'est une information de placement, pas une validation des ordres.</div><div class="note"><b><span>04</span> · Envoi</b>Bouton inactif tant que 3/5 ; la jauge interne montre la progression. À 5/5 il passe en aplat vert.</div></div>
+</div>
+<script>
+
+const LABEL={sub:'Station control',queue:'Approaching',orders:'Orders'};
+function cta(){return `${D.placed}/5`}
+function yard(){
+  const W=360,H=216,lead=110,sx=62,tx=132;let s='';
+  s+=`<line class="t-rail" x1="0" y1="${lead}" x2="${sx}" y2="${lead}"/>`;
+  s+=`<text class="lead-t" x="2" y="${lead+24}">ENTRY</text>`;
+  D.assign.forEach((t,i)=>{const y=28+i*40;const cls=t?'t-lit':(i===D.hover?'t-route':'t-rail');
+    s+=`<path class="${cls}" d="M${sx} ${lead} C ${sx+40} ${lead}, ${tx-36} ${y}, ${tx} ${y}"/>`;
+    s+=`<line class="${t?'t-lit':'t-rail'}" x1="${tx}" y1="${y}" x2="${W-4}" y2="${y}"/>`;
+    s+=`<text class="pl" x="${tx+4}" y="${y-7}">P${i+1}</text>`;
+    s+=`<circle class="${t?'sig-on':i===D.hover?'sig-wait':'sig-off'}" cx="${W-10}" cy="${y-8}" r="3"/>`;
+    const bx=168,bw=150;
+    if(t){s+=`<rect class="car" x="${bx}" y="${y-10}" width="${bw}" height="20" rx="2"/><text class="car-t" x="${bx+9}" y="${y+3.5}">${code(t)}</text><text class="car-n" x="${bx+40}" y="${y+3.5}">${t}</text>`}
+    else{const h=i===D.hover?' hov':'';s+=`<rect class="slot${h}" x="${bx}" y="${y-10}" width="${bw}" height="20" rx="2"/><text class="slot-t${h}" x="${bx+bw/2}" y="${y+3}" text-anchor="middle">${h?'ROUTE '+code(D.active)+' HERE':'OPEN'}</text>`}
+  });
+  s+=`<rect class="halo" x="6" y="${lead-10}" width="44" height="20" rx="2"/><rect class="act" x="6" y="${lead-10}" width="44" height="20" rx="2"/><text class="act-t" x="28" y="${lead+3.5}" text-anchor="middle">${code(D.active)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Track schematic">${s}</svg>`;
+}
+
+
+const D={
+  date:'09 Dec',clock:'01:42',streak:6,
+  trains:[['express','EXP'],['freight','FRT'],['local','LOC'],['overnight','OVN'],['shuttle','SHT']],
+  assign:['express',null,'local','overnight',null], active:'freight', hover:1,
+  orders:['The express sits on platform 1.','The overnight sits on platform 4.','The local sits on platform 3.','The local and the freight share adjacent platforms.']
+};
+D.placed=D.assign.filter(Boolean).length;
+const code=id=>D.trains.find(t=>t[0]===id)[1];
+const pad=n=>String(n).padStart(2,'0');
+function chips(){return D.trains.map(([id,c])=>{const p=D.assign.indexOf(id);const placed=p>-1;const act=id===D.active;
+  return `<button class="chip${placed?' is-placed':''}${act?' is-active':''}"><span class="c-code">${c}</span><span class="c-name">${id}</span><span class="c-pl">${placed?'P'+(p+1):act?'Selected':'Waiting'}</span></button>`}).join('')}
+function orders(){return D.orders.map((o,i)=>`<li><span class="o-n">${pad(i+1)}</span><span class="o-t">${o}</span></li>`).join('')}
+function gameHTML(){return `
+<div class="game">
+  <header class="g-head">
+    <div class="brand">Dispatch<small>${LABEL.sub}</small></div>
+    <div class="meta">
+      <div class="m"><i>Station</i><b>${D.date}</b></div>
+      <div class="m"><i>Clock</i><b>${D.clock}</b></div>
+      <div class="m m-s"><i>Streak</i><b>${D.streak}</b></div>
+    </div>
+  </header>
+  <p class="rule">Pick a train, then tap its platform. Every order must hold.</p>
+  <div class="body">
+    <section class="yard">${yard()}</section>
+    <div class="side">
+      <section class="queue"><h3>${LABEL.queue}</h3><div class="chips">${chips()}</div></section>
+      <section class="orders"><h3>${LABEL.orders} <span>${pad(D.orders.length)}</span></h3><ol>${orders()}</ol></section>
+    </div>
+  </div>
+  <button class="cta" disabled style="--p:${D.placed/5}"><span>Clear the signals</span><span class="cta-n">${cta()}</span></button>
+</div>`}
+function feed(){return `<div class="topbar"><span class="lg"></span><span class="lgt"></span><span class="se"></span><span class="av"></span></div>
+<div class="rail">${'<i></i>'.repeat(14)}</div><div class="col">${'<div class="pc"><i></i><i></i><em></em></div>'.repeat(2)}</div>`}
+const barHTML=`<span class="ic"></span><span>r/gameday_dispatch</span><small>· Dispatch · 09 Dec</small><span class="x"></span>`;
+document.getElementById('dsk').innerHTML=`<div class="dsk">${feed()}<div class="scrim"></div><div class="modal"><div class="bar">${barHTML}</div><div class="wv">${gameHTML()}</div></div></div>`;
+document.getElementById('mob').innerHTML=`<div class="mob"><div class="sbar"><span>9:41</span><span></span></div><div class="bar"><span class="x"></span><span>r/gameday_dispatch</span><small>· Dispatch</small></div><div class="wv">${gameHTML()}</div></div>`;
+
+</script>
+</body></html>

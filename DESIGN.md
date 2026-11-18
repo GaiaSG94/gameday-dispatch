@@ -1,3 +1,3 @@
-# DESIGN - gameday-p07
+# DESIGN - Dispatch
 
-> A completer (Claude, prompt 07-design).
+Journal de design : voir [`G-DESIGN/DESIGN.md`](G-DESIGN/DESIGN.md) (versions datees, decisions, changelog).

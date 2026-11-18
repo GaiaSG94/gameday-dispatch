@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Dispatch · V1 · 03 Signal Plan</title>
+<style>
+:root{--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+--mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--board-bg);color:var(--board-ink)}
+body{width:1440px;margin:0 auto;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.sheet{height:900px;padding:26px 48px 22px;display:flex;flex-direction:column;gap:18px}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;border-bottom:1px solid var(--board-line);padding-bottom:16px}
+.sh-k{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--board-mute)}
+.sh-t{font:600 26px/1.1 var(--sans);letter-spacing:-.015em;margin-top:9px}
+.sh-d{font-size:13px;line-height:1.45;color:var(--board-mute);margin-top:6px;max-width:640px}
+.spec{display:flex;gap:28px;align-items:flex-end}
+.sw{display:flex;gap:8px}
+.sw div{display:flex;flex-direction:column;gap:5px;font:500 9px/1 var(--mono);color:var(--board-mute);letter-spacing:.04em}
+.sw i{width:40px;height:30px;border:1px solid var(--board-line);display:block}
+.ty{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--board-mute)}
+.ty b{font:var(--ty-a);color:var(--board-ink)} .ty code{font:500 15px/1 var(--mono);color:var(--board-ink)}
+.frames{display:flex;gap:40px;justify-content:center;align-items:flex-start}
+.cap{font:500 10px/1 var(--mono);color:var(--board-mute);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between}
+.scaled{position:relative;overflow:hidden;outline:1px solid var(--board-line)}
+.scaled>.inner{position:absolute;top:0;left:0;transform-origin:0 0}
+.notes{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;border-top:1px solid var(--board-line);padding-top:14px;margin-top:auto}
+.note{font-size:12px;line-height:1.45;color:var(--board-mute)}
+.note b{display:block;color:var(--board-ink);font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.note b span{color:var(--accent)}
+
+/* ---------- Reddit-like frame, deliberately neutral (no brand) ---------- */
+.dsk{width:1440px;height:900px;position:relative;background:var(--feed-bg);font-family:system-ui,sans-serif;overflow:hidden}
+.topbar{height:56px;border-bottom:1px solid var(--feed-line);display:flex;align-items:center;padding:0 20px;gap:14px}
+.topbar .lg{width:32px;height:32px;border-radius:50%;background:var(--feed-mute)}
+.topbar .lgt{width:72px;height:12px;border-radius:6px;background:var(--feed-mute)}
+.topbar .se{width:560px;height:38px;border-radius:19px;background:var(--feed-card);margin-left:330px}
+.topbar .av{width:32px;height:32px;border-radius:50%;background:var(--feed-card);margin-left:auto}
+.rail{position:absolute;left:0;top:56px;width:272px;bottom:0;border-right:1px solid var(--feed-line);padding:24px}
+.rail i{display:block;height:10px;border-radius:5px;background:var(--feed-card);margin:0 0 22px;width:68%}
+.rail i:nth-child(3n){width:48%} .rail i:nth-child(4n){width:80%}
+.col{position:absolute;left:400px;top:80px;width:740px}
+.pc{border-bottom:1px solid var(--feed-line);padding:18px 0 22px}
+.pc i{display:block;height:10px;border-radius:5px;background:var(--feed-card);width:30%;margin-bottom:14px}
+.pc i+i{height:16px;width:70%}
+.pc em{display:block;height:300px;border-radius:14px;background:var(--feed-card)}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.modal{position:absolute;left:240px;top:40px;width:960px;height:820px;border-radius:14px;overflow:hidden;background:var(--g-bg);box-shadow:0 24px 80px rgba(0,0,0,.45)}
+.bar{height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--feed-bg);border-bottom:1px solid var(--feed-line);color:var(--feed-ink);font-size:13px}
+.bar .ic{width:22px;height:22px;border-radius:50%;background:var(--feed-mute)}
+.bar small{color:var(--feed-mute2);font-size:12px}
+.bar .x{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--feed-card);position:relative}
+.bar .x:before,.bar .x:after{content:"";position:absolute;left:8px;top:13px;width:12px;height:1.5px;background:var(--feed-ink);transform:rotate(45deg)}
+.bar .x:after{transform:rotate(-45deg)}
+.dsk .wv{height:774px}
+.mob{width:390px;height:844px;background:var(--feed-bg);display:flex;flex-direction:column;overflow:hidden;font-family:system-ui,sans-serif}
+.sbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font:600 15px/1 system-ui,sans-serif;color:var(--feed-ink)}
+.sbar span+span{width:64px;height:11px;border-radius:3px;background:var(--feed-mute)}
+.mob .bar{border-top:0}
+.mob .bar .x{margin-left:0}
+.mob .wv{flex:1}
+.wv{container-type:inline-size;position:relative;overflow:hidden}
+.game{height:100%}
+
+
+:root{--board-bg:#e6e2d8;--board-ink:#1c2128;--board-mute:#6a6c6c;--board-line:#cbc4b4;--accent:#d4402b;--ty-a:750 22px/1 var(--sans);
+--feed-bg:#ffffff;--feed-card:#eef0f2;--feed-line:#e3e6e8;--feed-mute:#c9cfd3;--feed-mute2:#6f7a80;--feed-ink:#1a1a1b;--scrim:rgba(0,0,0,.45);
+--g-bg:#f1eee6;--paper2:#e7e2d6;--line:#cbc4b4;--ink:#1c2128;--mute:#6c6f73;--red:#d4402b}
+.game{background:radial-gradient(#d5cfc1 1px,transparent 1.2px) 0 0/14px 14px,var(--g-bg);color:var(--ink);display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;font-family:var(--sans)}
+.g-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:9px}
+.brand{font:750 22px/1 var(--sans);letter-spacing:-.03em}
+.brand small{display:block;font:500 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:6px}
+.meta{display:flex;gap:14px}
+.m{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.m i{font:500 8.5px/1 var(--mono);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.m b{font:600 15px/1 var(--mono)}
+.m-s b{color:var(--red)}
+.rule{font-size:13px;line-height:1.35;color:var(--ink)}
+.body{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.side{display:flex;flex-direction:column;gap:12px}
+.yard{background:var(--g-bg);border:1px solid var(--ink);position:relative}
+.yard:before,.yard:after{content:"";position:absolute;width:8px;height:8px;border:1px solid var(--ink);background:var(--g-bg)}
+.yard:before{left:-5px;top:-5px} .yard:after{right:-5px;bottom:-5px}
+.yard svg{display:block;width:100%;height:auto}
+h3{font:600 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;display:flex;justify-content:space-between}
+h3 span{color:var(--ink)}
+.chips{display:flex;gap:6px}
+.chip{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;padding:7px 7px 7px 16px;background:var(--g-bg);border:1px solid var(--ink);border-radius:2px 8px 8px 2px;position:relative}
+.chip:before{content:"";position:absolute;left:5px;top:50%;width:5px;height:5px;margin-top:-2.5px;border:1px solid var(--ink);border-radius:50%}
+.c-code{font:700 12px/1 var(--mono);letter-spacing:.04em}
+.c-name{font-size:9.5px;color:var(--mute);text-transform:capitalize}
+.c-pl{font:500 7.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:2px}
+.chip.is-placed{background:var(--ink);color:var(--g-bg)}
+.chip.is-placed:before{border-color:var(--g-bg)}
+.chip.is-placed .c-name,.chip.is-placed .c-pl{color:#b8b3a6}
+.chip.is-active{background:var(--red);border-color:var(--red);color:#fff}
+.chip.is-active:before{border-color:#fff}
+.chip.is-active .c-name,.chip.is-active .c-pl{color:#fbd9d2}
+.orders ol{list-style:none;display:flex;flex-direction:column;gap:7px}
+.orders li{display:flex;gap:10px;font-size:12.5px;line-height:1.35;align-items:flex-start}
+.o-n{flex:none;width:20px;height:20px;border:1px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 9px/1 var(--mono)}
+.cta{margin-top:auto;height:46px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;border:1.5px dashed var(--ink);color:var(--ink);font:650 13px/1 var(--sans);cursor:not-allowed;background:var(--g-bg)}
+.cta-n{font:600 12px/1 var(--mono);color:var(--mute)}
+/* svg */
+.tr{stroke:var(--ink);stroke-width:1.5;fill:none}
+.sw-off{stroke:var(--line);stroke-width:1.5;fill:none}
+.sw-on{stroke:var(--ink);stroke-width:1.5;fill:none}
+.sw-route{stroke:var(--red);stroke-width:2;fill:none;stroke-dasharray:5 4;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-18}}
+.tick{stroke:var(--line);stroke-width:1}
+.pn{fill:var(--g-bg);stroke:var(--ink);stroke-width:1}
+.pn.on{fill:var(--ink)} .pn.hov{stroke:var(--red);stroke-width:1.5}
+.pn-t{font:600 9.5px var(--mono);fill:var(--ink)}
+.pn-t.on{fill:var(--g-bg)} .pn-t.hov{fill:var(--red)}
+.blk{fill:var(--ink)}
+.blk-t{font:700 10px var(--mono);fill:var(--g-bg);letter-spacing:.04em}
+.slot{fill:rgba(241,238,230,.85);stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3}
+.slot.hov{stroke:var(--red);fill:rgba(212,64,43,.06)}
+.slot-t{font:600 7.5px var(--mono);fill:var(--mute);letter-spacing:.12em}
+.slot-t.hov{fill:var(--red)}
+.dim{font:500 7px var(--mono);fill:var(--mute);letter-spacing:.1em}
+.act{fill:var(--red)} .act-t{font:700 10px var(--mono);fill:#fff;letter-spacing:.04em}
+.halo{fill:none;stroke:var(--red);stroke-width:1;animation:halo 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes halo{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.35,1.7)}}
+@container (min-width:600px){
+ .game{padding:26px 32px 28px;gap:18px;background-size:18px 18px}
+ .brand{font-size:32px} .m b{font-size:24px} .meta{gap:28px} .m i{font-size:9.5px}
+ .rule{font-size:14px}
+ .body{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}
+ .side{gap:22px}
+ .yard{display:flex;flex-direction:column;justify-content:center;padding:12px 8px}
+ .chips{display:grid;grid-template-columns:1fr 1fr}
+ .chip{padding:10px 10px 10px 22px} .chip:before{left:8px}
+ .c-code{font-size:14px} .c-name{font-size:11px}
+ .orders li{font-size:13.5px}
+ .cta{height:54px;font-size:15px}
+}
+
+</style></head>
+<body>
+<div class="sheet">
+  <div class="sheet-head">
+    <div>
+      <div class="sh-k">Dispatch · Planche V1 · 03 / 03 · Page principale « Jeu » · 2026-11-18</div>
+      <div class="sh-t">03 — Signal Plan</div>
+      <div class="sh-d">L'écart assumé : un plan de voies imprimé, clair, comme un dessin d'ingénieur posé sur la table. Papier, encre, un seul rouge signal. Dans un feed sombre, c'est le post qui ressort ; les voies verticales se lisent comme des quais vus d'en haut et tombent naturellement sous le pouce en mobile.</div>
+    </div>
+    <div class="spec">
+      <div class="sw"><div><i style="background:#f1eee6"></i>Papier<br>#f1eee6</div><div><i style="background:#e7e2d6"></i>Calque<br>#e7e2d6</div><div><i style="background:#cbc4b4"></i>Trait<br>#cbc4b4</div><div><i style="background:#1c2128"></i>Encre<br>#1c2128</div><div><i style="background:#d4402b"></i>Signal<br>#d4402b</div></div>
+      <div class="ty"><b>Dispatch</b><code>01:42 · P3</code><span>Sans serré pour les titres · mono pour cotes, quais, codes</span></div>
+    </div>
+  </div>
+  <div class="frames">
+    <div><div class="cap"><span>Desktop · 1440 × 900 · vue étendue</span><span>× 0.62</span></div>
+      <div class="scaled" style="width:893px;height:558px"><div class="inner" id="dsk" style="transform:scale(.62)"></div></div></div>
+    <div><div class="cap"><span>Mobile · 390 × 844</span><span>× 0.661</span></div>
+      <div class="scaled" style="width:258px;height:558px"><div class="inner" id="mob" style="transform:scale(.6611)"></div></div></div>
+  </div>
+  <div class="notes"><div class="note"><b><span>01</span> · Sélection</b>Le train choisi (FRT) est posé en rouge au pied de l'éventail d'aiguillages. Les étiquettes des trains placés passent à l'encre avec leur quai.</div><div class="note"><b><span>02</span> · Survol du quai 2</b>L'itinéraire rouge en pointillé remonte l'aiguillage jusqu'au quai 2 ; le numéro du quai passe en rouge.</div><div class="note"><b><span>03</span> · Quai occupé</b>Le bloc et le numéro passent à l'encre pleine, l'aiguillage reste tracé. Aucune validation des ordres avant envoi.</div><div class="note"><b><span>04</span> · Envoi</b>Bouton au trait tant que 3/5, avec le compte en mono. À 5/5 il passe à l'encre pleine.</div></div>
+</div>
+<script>
+
+const LABEL={sub:'Station plan · Day 09.12',queue:'Trains',orders:'Orders'};
+function cta(){return `${D.placed} of 5 routed`}
+function yard(){
+  const W=360,H=262,top=40,bot=190,throat=226,cx=180;let s='';
+  const xs=[44,112,180,248,316];
+  // cotes
+  s+=`<line class="tick" x1="20" y1="${top}" x2="20" y2="${bot}"/>`;
+  for(let y=top;y<=bot;y+=15)s+=`<line class="tick" x1="17" y1="${y}" x2="23" y2="${y}"/>`;
+  D.assign.forEach((t,i)=>{const x=xs[i];const hov=!t&&i===D.hover;
+    s+=`<path class="${t?'sw-on':hov?'sw-route':'sw-off'}" d="M${cx} ${throat} L${cx} ${throat-6} L${x} ${bot+14} L${x} ${bot}"/>`;
+    s+=`<line class="tr" x1="${x}" y1="${top}" x2="${x}" y2="${bot}"/>`;
+    for(let y=top+8;y<bot;y+=12)s+=`<line class="tick" x1="${x-5}" y1="${y}" x2="${x+5}" y2="${y}"/>`;
+    s+=`<circle class="pn${t?' on':hov?' hov':''}" cx="${x}" cy="20" r="10"/><text class="pn-t${t?' on':hov?' hov':''}" x="${x}" y="23.5" text-anchor="middle">${i+1}</text>`;
+    if(t){s+=`<rect class="blk" x="${x-17}" y="${top+18}" width="34" height="112" rx="3"/><text class="blk-t" x="${x}" y="${top+78}" text-anchor="middle">${code(t)}</text>`}
+    else{const h=hov?' hov':'';s+=`<rect class="slot${h}" x="${x-17}" y="${top+18}" width="34" height="112" rx="3"/><text class="slot-t${h}" x="${x}" y="${top+78}" text-anchor="middle">${hov?code(D.active):'OPEN'}</text>`}
+  });
+  s+=`<line class="tr" x1="${cx}" y1="${throat}" x2="${cx}" y2="${H}"/>`;
+  s+=`<rect class="halo" x="${cx-20}" y="${throat+6}" width="40" height="18" rx="2"/><rect class="act" x="${cx-20}" y="${throat+6}" width="40" height="18" rx="2"/><text class="act-t" x="${cx}" y="${throat+18.5}" text-anchor="middle">${code(D.active)}</text>`;
+  s+=`<text class="dim" x="${cx+28}" y="${throat+18}">ENTRY</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Station plan">${s}</svg>`;
+}
+
+
+const D={
+  date:'09 Dec',clock:'01:42',streak:6,
+  trains:[['express','EXP'],['freight','FRT'],['local','LOC'],['overnight','OVN'],['shuttle','SHT']],
+  assign:['express',null,'local','overnight',null], active:'freight', hover:1,
+  orders:['The express sits on platform 1.','The overnight sits on platform 4.','The local sits on platform 3.','The local and the freight share adjacent platforms.']
+};
+D.placed=D.assign.filter(Boolean).length;
+const code=id=>D.trains.find(t=>t[0]===id)[1];
+const pad=n=>String(n).padStart(2,'0');
+function chips(){return D.trains.map(([id,c])=>{const p=D.assign.indexOf(id);const placed=p>-1;const act=id===D.active;
+  return `<button class="chip${placed?' is-placed':''}${act?' is-active':''}"><span class="c-code">${c}</span><span class="c-name">${id}</span><span class="c-pl">${placed?'P'+(p+1):act?'Selected':'Waiting'}</span></button>`}).join('')}
+function orders(){return D.orders.map((o,i)=>`<li><span class="o-n">${pad(i+1)}</span><span class="o-t">${o}</span></li>`).join('')}
+function gameHTML(){return `
+<div class="game">
+  <header class="g-head">
+    <div class="brand">Dispatch<small>${LABEL.sub}</small></div>
+    <div class="meta">
+      <div class="m"><i>Station</i><b>${D.date}</b></div>
+      <div class="m"><i>Clock</i><b>${D.clock}</b></div>
+      <div class="m m-s"><i>Streak</i><b>${D.streak}</b></div>
+    </div>
+  </header>
+  <p class="rule">Pick a train, then tap its platform. Every order must hold.</p>
+  <div class="body">
+    <section class="yard">${yard()}</section>
+    <div class="side">
+      <section class="queue"><h3>${LABEL.queue}</h3><div class="chips">${chips()}</div></section>
+      <section class="orders"><h3>${LABEL.orders} <span>${pad(D.orders.length)}</span></h3><ol>${orders()}</ol></section>
+    </div>
+  </div>
+  <button class="cta" disabled style="--p:${D.placed/5}"><span>Clear the signals</span><span class="cta-n">${cta()}</span></button>
+</div>`}
+function feed(){return `<div class="topbar"><span class="lg"></span><span class="lgt"></span><span class="se"></span><span class="av"></span></div>
+<div class="rail">${'<i></i>'.repeat(14)}</div><div class="col">${'<div class="pc"><i></i><i></i><em></em></div>'.repeat(2)}</div>`}
+const barHTML=`<span class="ic"></span><span>r/gameday_dispatch</span><small>· Dispatch · 09 Dec</small><span class="x"></span>`;
+document.getElementById('dsk').innerHTML=`<div class="dsk">${feed()}<div class="scrim"></div><div class="modal"><div class="bar">${barHTML}</div><div class="wv">${gameHTML()}</div></div></div>`;
+document.getElementById('mob').innerHTML=`<div class="mob"><div class="sbar"><span>9:41</span><span></span></div><div class="bar"><span class="x"></span><span>r/gameday_dispatch</span><small>· Dispatch</small></div><div class="wv">${gameHTML()}</div></div>`;
+
+</script>
+</body></html>
